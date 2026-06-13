@@ -12,7 +12,13 @@ Static storefront and care site for Blackthorn's Tropical Plants, an Oregon-grow
 
 ## Local development
 
-Install dependencies, then run the local Vinext dev server:
+For the GitHub Pages/static version, serve the repo root:
+
+```bash
+python3 -m http.server 4173
+```
+
+For the Sites/Vinext version, install dependencies, then run the local Vinext dev server:
 
 ```bash
 npm install
@@ -28,6 +34,7 @@ npm run build
 ## Maintenance notes
 
 - Update contact routing in `app/page.tsx` by changing `CONTACT_EMAIL`.
+- Keep `index.html`, `styles.css`, and `script.js` in sync for GitHub Pages.
 - Edit inventory in `app/page.tsx` by updating the `plants` array.
 - Add new plant photos under `public/assets/images/` and reference them from the relevant card or section.
 - Sites deployment metadata lives in `.openai/hosting.json`.

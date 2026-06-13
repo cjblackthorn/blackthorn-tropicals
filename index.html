@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Blackthorn's Tropical Plants sells Oregon-grown tropical plants, monstera cuttings, rooted starts, and care guidance from node to jungle."
+    />
+    <meta name="theme-color" content="#07110d" />
+    <title>Blackthorn's Tropical Plants | From Node to Jungle</title>
+    <link rel="icon" type="image/png" sizes="192x192" href="public/assets/images/favicon-192.png" />
+    <link rel="manifest" href="public/site.webmanifest" />
+    <link rel="preload" href="public/assets/images/hero-monstera.webp" as="image" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header" data-header>
+      <a class="brand" href="#top" aria-label="Blackthorn's Tropical Plants home">
+        <img src="public/assets/images/blackthorn-logo-512.png" alt="" width="72" height="72" />
+        <span>Blackthorn's</span>
+      </a>
+
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span class="sr-only">Menu</span>
+      </button>
+
+      <nav class="site-nav" id="site-nav" aria-label="Primary navigation">
+        <a href="#shop">Shop</a>
+        <a href="#stages">Plants</a>
+        <a href="#care">Learn</a>
+        <a href="#queen-chloe">About</a>
+        <a href="#contact">Contact</a>
+      </nav>
+
+      <button class="quote-button" type="button" data-cart-open>
+        <span>Quote</span>
+        <strong data-cart-count>0</strong>
+      </button>
+    </header>
+
+    <main id="main">
+      <section class="hero" id="top" aria-labelledby="hero-title">
+        <div class="hero-media" aria-hidden="true"></div>
+        <div class="hero-content">
+          <p class="eyebrow">From node to jungle</p>
+          <h1 id="hero-title">Blackthorn's Tropical Plants</h1>
+          <p class="hero-copy">
+            Premium monstera starts, rooted cuttings, and tropical plants grown with patient roots,
+            strong leaves, and clear care guidance.
+          </p>
+          <div class="hero-actions">
+            <a class="button primary" href="#shop">Shop plants</a>
+            <a class="button secondary" href="#care">Care guides</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="cred-strip" aria-label="Business highlights">
+        <div>
+          <strong>Locally grown</strong>
+          <span>Oregon-rooted plants raised with sustainable nursery practices.</span>
+        </div>
+        <div>
+          <strong>Queen Chloe lineage</strong>
+          <span>Mother plant genetics guide every cutting and collection drop.</span>
+        </div>
+        <div>
+          <strong>Roots first</strong>
+          <span>Cuttings ship only when the root system is ready for the next stage.</span>
+        </div>
+        <div>
+          <strong>Education included</strong>
+          <span>Each plant comes with a care path matched to its stage.</span>
+        </div>
+      </section>
+
+      <section class="section parchment" id="stages" aria-labelledby="stages-title">
+        <div class="section-heading">
+          <p class="eyebrow">Shop by stage</p>
+          <h2 id="stages-title">Every Stage. Every Jungle.</h2>
+          <p>
+            Choose the plant stage that matches your confidence, setup, and appetite for watching
+            roots do their quiet work.
+          </p>
+        </div>
+
+        <div class="stage-grid" aria-label="Plant growth stages">
+          <button class="stage-card" type="button" data-stage-link="node">
+            <img src="public/assets/images/stage-node-cutting.webp" alt="Fresh monstera node cutting" />
+            <span>Node cutting</span>
+            <small>For propagation-minded growers.</small>
+          </button>
+          <button class="stage-card" type="button" data-stage-link="rooting">
+            <img src="public/assets/images/stage-rooting-node.webp" alt="Monstera node with a new root" />
+            <span>Rooting node</span>
+            <small>Roots are forming and growth is starting.</small>
+          </button>
+          <button class="stage-card" type="button" data-stage-link="rooted">
+            <img src="public/assets/images/stage-rooted-cutting.webp" alt="Rooted monstera cutting" />
+            <span>Rooted cutting</span>
+            <small>Established roots, ready to pot.</small>
+          </button>
+          <button class="stage-card" type="button" data-stage-link="baby">
+            <img src="public/assets/images/stage-baby-plant.webp" alt="Small baby monstera plant" />
+            <span>Baby plant</span>
+            <small>New leaves and new beginnings.</small>
+          </button>
+          <button class="stage-card" type="button" data-stage-link="juvenile">
+            <img src="public/assets/images/stage-juvenile-plant.webp" alt="Juvenile monstera in a nursery pot" />
+            <span>Juvenile plant</span>
+            <small>Stronger, bolder, growing beautifully.</small>
+          </button>
+          <button class="stage-card" type="button" data-stage-link="mature">
+            <img src="public/assets/images/stage-mature-plant.webp" alt="Mature variegated monstera plant" />
+            <span>Mature plant</span>
+            <small>A living jungle in the making.</small>
+          </button>
+        </div>
+      </section>
+
+      <section class="section shop-section" id="shop" aria-labelledby="shop-title">
+        <div class="shop-intro">
+          <div>
+            <p class="eyebrow">Current nursery board</p>
+            <h2 id="shop-title">Reserve the Next Drop</h2>
+          </div>
+          <div class="filter-bar" role="group" aria-label="Filter inventory by stage">
+            <button class="filter-button is-active" type="button" data-filter="all">All</button>
+            <button class="filter-button" type="button" data-filter="node">Nodes</button>
+            <button class="filter-button" type="button" data-filter="rooting">Rooting</button>
+            <button class="filter-button" type="button" data-filter="rooted">Rooted</button>
+            <button class="filter-button" type="button" data-filter="baby">Baby</button>
+            <button class="filter-button" type="button" data-filter="juvenile">Juvenile</button>
+            <button class="filter-button" type="button" data-filter="mature">Mature</button>
+          </div>
+        </div>
+
+        <div class="inventory-grid" data-inventory>
+          <article class="plant-card" data-stage="node" data-sku="queen-node" data-title="Queen Chloe Node Cutting" data-price="38">
+            <img src="public/assets/images/stage-node-cutting.webp" alt="Queen Chloe monstera node cutting" />
+            <div class="plant-card-body">
+              <p class="plant-stage">Node cutting</p>
+              <h3>Queen Chloe Node Cutting</h3>
+              <p>Fresh-cut node from the nursery's matriarch line, sealed and ready for your prop box.</p>
+              <div class="plant-meta">
+                <span>From $38</span>
+                <span>Limited</span>
+              </div>
+              <button class="button plant-action" type="button" data-add-to-cart>Reserve</button>
+            </div>
+          </article>
+
+          <article class="plant-card" data-stage="rooted" data-sku="albo-rooted" data-title="Albo Rooted Cutting" data-price="74">
+            <img src="public/assets/images/stage-rooted-cutting.webp" alt="Rooted variegated monstera cutting" />
+            <div class="plant-card-body">
+              <p class="plant-stage">Rooted cutting</p>
+              <h3>Albo Rooted Cutting</h3>
+              <p>Established aerial roots with balanced green and cream marbling, ready for chunky mix.</p>
+              <div class="plant-meta">
+                <span>From $74</span>
+                <span>Root checked</span>
+              </div>
+              <button class="button plant-action" type="button" data-add-to-cart>Reserve</button>
+            </div>
+          </article>
+
+          <article class="plant-card" data-stage="baby" data-sku="thai-baby" data-title="Thai Constellation Baby" data-price="88">
+            <img src="public/assets/images/stage-baby-plant.webp" alt="Baby Thai Constellation monstera plant" />
+            <div class="plant-card-body">
+              <p class="plant-stage">Baby plant</p>
+              <h3>Thai Constellation Baby</h3>
+              <p>Small but sturdy plant with speckled variegation and a care plan for steady sizing up.</p>
+              <div class="plant-meta">
+                <span>From $88</span>
+                <span>Nursery pot</span>
+              </div>
+              <button class="button plant-action" type="button" data-add-to-cart>Reserve</button>
+            </div>
+          </article>
+
+          <article class="plant-card" data-stage="juvenile" data-sku="juvenile-deliciosa" data-title="Juvenile Monstera Deliciosa" data-price="46">
+            <img src="public/assets/images/stage-juvenile-plant.webp" alt="Juvenile Monstera deliciosa in a pot" />
+            <div class="plant-card-body">
+              <p class="plant-stage">Juvenile plant</p>
+              <h3>Juvenile Monstera Deliciosa</h3>
+              <p>Bold leaf growth, acclimated indoors, and ready for a moss pole or brighter window.</p>
+              <div class="plant-meta">
+                <span>From $46</span>
+                <span>Beginner friendly</span>
+              </div>
+              <button class="button plant-action" type="button" data-add-to-cart>Reserve</button>
+            </div>
+          </article>
+
+          <article class="plant-card" data-stage="mature" data-sku="mature-variegated" data-title="Mature Variegated Monstera" data-price="185">
+            <img src="public/assets/images/stage-mature-plant.webp" alt="Mature variegated monstera specimen" />
+            <div class="plant-card-body">
+              <p class="plant-stage">Mature plant</p>
+              <h3>Mature Variegated Monstera</h3>
+              <p>Statement plant with developed fenestration, selected for collectors and styled rooms.</p>
+              <div class="plant-meta">
+                <span>From $185</span>
+                <span>Local pickup</span>
+              </div>
+              <button class="button plant-action" type="button" data-add-to-cart>Reserve</button>
+            </div>
+          </article>
+
+          <article class="plant-card" data-stage="rooting" data-sku="aurea-rooting" data-title="Aurea Rooting Node" data-price="62">
+            <img src="public/assets/images/stage-rooting-node.webp" alt="Monstera aurea rooting node" />
+            <div class="plant-card-body">
+              <p class="plant-stage">Rooting node</p>
+              <h3>Aurea Rooting Node</h3>
+              <p>Warm variegation potential with an active root nub and detailed transition notes.</p>
+              <div class="plant-meta">
+                <span>From $62</span>
+                <span>Prop box ready</span>
+              </div>
+              <button class="button plant-action" type="button" data-add-to-cart>Reserve</button>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="queen-panel" id="queen-chloe" aria-labelledby="queen-title">
+        <div class="queen-copy">
+          <p class="eyebrow">Meet our matriarch</p>
+          <h2 id="queen-title">Queen Chloe</h2>
+          <p>
+            The Blackthorn nursery starts with a mother plant that earned her crown the slow way:
+            stable roots, dramatic fenestration, and the kind of variegation that makes every new
+            leaf feel ceremonial.
+          </p>
+          <a class="button secondary" href="#contact">Ask about lineage</a>
+        </div>
+        <img src="public/assets/images/queen-chloe-leaf.webp" alt="Close detail of a variegated monstera leaf" />
+      </section>
+
+      <section class="section collection-section" aria-labelledby="collection-title">
+        <div class="section-heading">
+          <p class="eyebrow">Collections</p>
+          <h2 id="collection-title">Dark Leaves. Bright Variegation. Clean Roots.</h2>
+        </div>
+
+        <div class="collection-grid">
+          <article>
+            <img src="public/assets/images/collection-noir.webp" alt="Dark tropical plant leaves" />
+            <h3>Blackthorn Noir</h3>
+            <p>Deep, glossy foliage for growers who like their jungle a little moody.</p>
+          </article>
+          <article>
+            <img src="public/assets/images/collection-variegated.webp" alt="Variegated monstera leaf with water droplets" />
+            <h3>Premium Collectibles</h3>
+            <p>Rare monsteras selected for root quality, variegation, and long-term vigor.</p>
+          </article>
+          <article>
+            <img src="public/assets/images/propagation-roots.webp" alt="Plant cuttings rooting in clear water" />
+            <h3>Learn and Grow</h3>
+            <p>Care support for propagation, acclimation, watering, light, and chunky substrate.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section care-section parchment" id="care" aria-labelledby="care-title">
+        <div class="care-layout">
+          <div>
+            <p class="eyebrow">Care library</p>
+            <h2 id="care-title">Grow With Confidence</h2>
+            <p>
+              Tropical plants reward consistency. Start with the current stage, then tune light,
+              water, humidity, and support as the root system expands.
+            </p>
+          </div>
+          <div class="care-list">
+            <article>
+              <span>01</span>
+              <h3>Light</h3>
+              <p>Bright indirect light keeps variegation strong without scorching cream sectors.</p>
+            </article>
+            <article>
+              <span>02</span>
+              <h3>Water</h3>
+              <p>Let the top layer breathe before watering. Roots want oxygen as much as moisture.</p>
+            </article>
+            <article>
+              <span>03</span>
+              <h3>Roots</h3>
+              <p>Root health leads every sale. Pot up only when roots can hold the next container.</p>
+            </article>
+            <article>
+              <span>04</span>
+              <h3>Support</h3>
+              <p>A pole or plank encourages larger leaves, stronger petioles, and mature fenestration.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="contact-section" id="contact" aria-labelledby="contact-title">
+        <div class="contact-copy">
+          <p class="eyebrow">Join the jungle</p>
+          <h2 id="contact-title">Ask About the Next Drop</h2>
+          <p>
+            Send your wishlist, care question, or pickup request. The quote drawer will include any
+            reserved plants you selected.
+          </p>
+        </div>
+        <form class="contact-form" data-contact-form>
+          <label>
+            Name
+            <input name="name" autocomplete="name" required />
+          </label>
+          <label>
+            Email
+            <input name="email" type="email" autocomplete="email" required />
+          </label>
+          <label>
+            What are you growing toward?
+            <select name="interest">
+              <option>Monsteras and variegated starts</option>
+              <option>Beginner-friendly tropical plants</option>
+              <option>Care help for a current plant</option>
+              <option>Local pickup or custom sourcing</option>
+            </select>
+          </label>
+          <label>
+            Message
+            <textarea name="message" rows="4" placeholder="Tell us what you are looking for."></textarea>
+          </label>
+          <button class="button primary" type="submit">Send inquiry</button>
+          <p class="form-note" data-form-note></p>
+        </form>
+      </section>
+    </main>
+
+    <aside class="quote-panel" data-cart-panel aria-label="Quote drawer" aria-hidden="true">
+      <div class="quote-panel-inner">
+        <div class="quote-panel-header">
+          <div>
+            <p class="eyebrow">Quote drawer</p>
+            <h2>Plant Holds</h2>
+          </div>
+          <button class="panel-close" type="button" data-cart-close aria-label="Close quote drawer">x</button>
+        </div>
+        <div class="quote-items" data-cart-items>
+          <p class="empty-cart">No plants selected yet.</p>
+        </div>
+        <div class="quote-total">
+          <span>Estimated starter total</span>
+          <strong data-cart-total>$0</strong>
+        </div>
+        <a class="button primary quote-mail" href="#contact" data-cart-contact>Send inquiry</a>
+      </div>
+    </aside>
+
+    <footer class="site-footer">
+      <div>
+        <img src="public/assets/images/blackthorn-logo-512.png" alt="Blackthorn's Tropical Plants logo" width="92" height="92" />
+      </div>
+      <div>
+        <strong>Blackthorn's Tropical Plants</strong>
+        <span>From node to jungle. Proudly grown in Oregon, USA.</span>
+      </div>
+      <a href="#top">Back to top</a>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
