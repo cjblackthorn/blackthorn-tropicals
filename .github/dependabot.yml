@@ -1,0 +1,9 @@
+# Keep npm dependency updates reviewable and lockfile-consistent.
+# Security updates are handled separately from scheduled version updates.
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 10
