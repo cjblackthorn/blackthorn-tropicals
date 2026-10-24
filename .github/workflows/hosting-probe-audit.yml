@@ -17,6 +17,7 @@ jobs:
         shell: bash
         run: |
           set -uo pipefail
+          set +e
           echo "## Tropical Plants hosting probe" >> "$GITHUB_STEP_SUMMARY"
           echo "Timestamp UTC: $(date -u +'%Y-%m-%dT%H:%M:%SZ')" | tee -a "$GITHUB_STEP_SUMMARY"
           host=tropicals.blackthorn.enterprises
@@ -34,7 +35,12 @@ jobs:
               "$target" 2>&1)
             code=$?
             echo "curl_exit=$code $result" | tee -a "$GITHUB_STEP_SUMMARY"
-            if [ "$code" -eq 0 ]; then
+            if [ "$code" -eq 60 ]; then
+              echo "TLS certificate verification failed; collecting certificate identity and insecure content diagnostics only." | tee -a "$GITHUB_STEP_SUMMARY"
+              echo | openssl s_client -connect "$host:443" -servername "$host" -showcerts 2>/dev/null | openssl x509 -noout -subject -issuer -dates -ext subjectAltName 2>&1 | head -n 16 | tee -a "$GITHUB_STEP_SUMMARY"
+              curl --insecure --location --silent --show-error --compressed --max-time 18 --dump-header "$headers" --output "$body" --write-out "DIAGNOSTIC-INSECURE http=%{http_code} final=%{url_effective} bytes=%{size_download}\\n" "$target" 2>&1 | tee -a "$GITHUB_STEP_SUMMARY"
+            fi
+            if [ -s "$body" ]; then
               echo "Response headers (filtered):" | tee -a "$GITHUB_STEP_SUMMARY"
               grep -iE '^(HTTP/|server:|cf-ray:|x-powered-by:|content-type:|location:|x-github-request-id:|x-served-by:|x-cache:)' "$headers" | tail -n 20 | tee -a "$GITHUB_STEP_SUMMARY" || true
               echo "HTML title:" | tee -a "$GITHUB_STEP_SUMMARY"
