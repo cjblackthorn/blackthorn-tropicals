@@ -1,0 +1,45 @@
+name: Test lockfile-only dependency remediation (no deployment)
+
+on:
+  push:
+    branches: [validation/tropicals-npm-audit-fix-20261024]
+
+permissions:
+  contents: read
+
+jobs:
+  lockfile-fix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install current lockfile
+        run: npm ci --no-audit --no-fund
+      - name: Compute lockfile-only remediation
+        shell: bash
+        run: |
+          set +e
+          npm audit fix --package-lock-only --omit=dev --no-fund
+          result=$?
+          set -e
+          echo "npm audit fix exit=$result"
+          echo "Changed files:"
+          git status --short
+          echo "BEGIN GENERATED LOCKFILE PATCH"
+          git --no-pager diff -- package-lock.json
+          echo "END GENERATED LOCKFILE PATCH"
+          test "$result" -eq 0
+      - name: Reinstall with amended lockfile
+        run: npm ci --no-audit --no-fund
+      - name: Verify lint
+        run: npm run lint
+      - name: Verify Vinext production build
+        run: npm run build
+      - name: Re-audit runtime packages
+        run: npm audit --omit=dev --audit-level=high
