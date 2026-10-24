@@ -46,6 +46,8 @@ const cartCount = document.querySelector("[data-cart-count]");
 const cartTotal = document.querySelector("[data-cart-total]");
 const contactForm = document.querySelector("[data-contact-form]");
 const formNote = document.querySelector("[data-form-note]");
+let quoteOpener = null;
+cartPanel.inert = true;
 
 function saveCart() {
   try {
@@ -118,16 +120,36 @@ function removeFromCart(sku) {
   }
   saveCart();
   renderCart();
+  // The clicked Remove button is destroyed during rerender; keep focus in
+  // the open drawer rather than losing keyboard position to document.body.
+  if (cartPanel.classList.contains("is-open")) {
+    (cartPanel.querySelector("[data-remove-item]") ||
+      cartPanel.querySelector("[data-cart-close]")).focus({ preventScroll: true });
+  }
 }
 
 function openCart() {
+  if (!cartPanel.classList.contains("is-open")) {
+    quoteOpener = document.activeElement;
+  }
+  cartPanel.inert = false;
   cartPanel.classList.add("is-open");
   cartPanel.setAttribute("aria-hidden", "false");
+  // A separate task runs after the activating button's click finishes.
+  setTimeout(() => {
+    if (cartPanel.classList.contains("is-open")) {
+      cartPanel.querySelector("[data-cart-close]").focus({ preventScroll: true });
+    }
+  }, 0);
 }
 
-function closeCart() {
+function closeCart(restoreFocus = true) {
+  if (!cartPanel.classList.contains("is-open")) return;
   cartPanel.classList.remove("is-open");
   cartPanel.setAttribute("aria-hidden", "true");
+  cartPanel.inert = true;
+  if (restoreFocus && quoteOpener?.isConnected) quoteOpener.focus({ preventScroll: true });
+  quoteOpener = null;
 }
 
 function applyFilter(stage) {
@@ -207,12 +229,34 @@ document.addEventListener("click", (event) => {
   }
 
   if (event.target.closest("[data-cart-contact]")) {
-    closeCart();
+    closeCart(false);
+    setTimeout(() => contactForm?.querySelector('[name="name"]')?.focus({ preventScroll: true }), 0);
   }
 });
 
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") closeCart();
+  if (!cartPanel.classList.contains("is-open")) return;
+  if (event.key === "Escape") {
+    event.preventDefault();
+    closeCart();
+    return;
+  }
+  if (event.key !== "Tab") return;
+  const focusables = [...cartPanel.querySelectorAll("button, a[href]")]
+    .filter(el => !el.disabled && el.getClientRects().length);
+  if (!focusables.length) return;
+  const first = focusables[0];
+  const last = focusables[focusables.length - 1];
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  } else if (!cartPanel.contains(document.activeElement)) {
+    event.preventDefault();
+    first.focus();
+  }
 });
 
 contactForm?.addEventListener("submit", (event) => {
