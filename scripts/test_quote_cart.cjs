@@ -31,7 +31,16 @@ async function main() {
     assert.equal(await page.locator("[data-cart-count]").innerText(), "1");
     assert.equal(await page.locator("[data-cart-total]").innerText(), "$38");
     assert.equal(await page.locator("[data-cart-panel]").getAttribute("aria-hidden"), "false");
+    assert.equal(await page.locator("[data-cart-panel]").getAttribute("aria-modal"), "true");
+    assert.equal(await page.locator("[data-cart-panel]").evaluate(el => el.inert), false);
+    await page.waitForFunction(() => document.activeElement?.matches("[data-cart-close]"), null, { timeout: 3000 });
+    await page.keyboard.press("Shift+Tab");
+    assert.equal(await page.locator("[data-cart-contact]").evaluate(el => document.activeElement === el), true);
+    await page.keyboard.press("Tab");
+    assert.equal(await page.locator("[data-cart-close]").evaluate(el => document.activeElement === el), true);
     await page.locator("[data-cart-close]").click();
+    assert.equal(await page.locator("[data-cart-panel]").evaluate(el => el.inert), true);
+    assert.equal(await page.locator(".plant-card[data-sku='queen-node'] [data-add-to-cart]").evaluate(el => document.activeElement === el), true);
     await page.locator(".plant-card[data-sku='queen-node'] [data-add-to-cart]").click();
     assert.equal(await page.locator("[data-cart-total]").innerText(), "$76");
 
@@ -43,10 +52,12 @@ async function main() {
     assert.equal(await page.locator("[data-cart-count]").innerText(), "1");
     await page.locator("[data-remove-item='queen-node']").click();
     assert.equal(await page.locator("[data-cart-count]").innerText(), "0");
+    assert.equal(await page.locator("[data-cart-close]").evaluate(el => document.activeElement === el), true);
     assert.equal(await page.locator("[data-cart-total]").innerText(), "$0");
     assert.match(await page.locator("[data-cart-items]").innerText(), /No plants selected/);
     await page.keyboard.press("Escape");
     assert.equal(await page.locator("[data-cart-panel]").getAttribute("aria-hidden"), "true");
+    assert.equal(await page.locator("[data-cart-open]").evaluate(el => document.activeElement === el), true);
 
     await page.locator('[data-filter="node"]').click();
     assert.equal(await page.locator(".plant-card:visible").count(), 1);
