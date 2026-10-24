@@ -74,4 +74,12 @@ jobs:
           curl --silent --show-error --head --location --connect-timeout 7 --max-time 18 \
             --output /dev/null --write-out "http=%{http_code} final=%{url_effective} tls_verify=%{ssl_verify_result}\n" \
             "https://$host/" || true
+          echo "Plain HTTP response and redirect chain:"
+          curl --silent --show-error --max-time 18 --dump-header /tmp/http-headers \
+            --output /dev/null --write-out "HTTP entry status=%{http_code} final=%{url_effective}\\n" \
+            "http://$host/" || true
+          grep -iE '^(HTTP/|location:)' /tmp/http-headers | head -n 16 || true
+          echo "Official Pages project alias:"
+          curl --silent --show-error --max-time 18 --head \
+            "https://cjblackthorn.github.io/blackthorn-tropicals/" | grep -iE '^(HTTP/|location:)' | head -n 10 || true
           echo "Read-only diagnostic completed; no Pages/DNS settings modified."
