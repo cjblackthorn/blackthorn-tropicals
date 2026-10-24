@@ -1,0 +1,77 @@
+name: Diagnose stuck Tropical Plants TLS (read-only)
+
+on:
+  push:
+    branches:
+      - diagnostics/pages-tls-stuck-20261024
+
+permissions:
+  contents: read
+  pages: read
+
+jobs:
+  inspect-https:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Read Pages certificate state from GitHub API
+        shell: bash
+        run: |
+          set -uo pipefail
+          base="https://api.github.com/repos/${GITHUB_REPOSITORY}/pages"
+          for endpoint in "$base" "$base/health" "https://api.github.com/repos/cjblackthorn/cjblackthorn.github.io/pages"; do
+            tmp="$(mktemp)"
+            code=$(curl --silent --show-error --max-time 20 -o "$tmp" -w '%{http_code}' \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              -H "X-GitHub-Api-Version: 2022-11-28" "$endpoint")
+            echo "Endpoint: $endpoint (HTTP $code)"
+            python3 - "$tmp" <<'PY'
+          import json,sys
+          try:
+              obj=json.load(open(sys.argv[1]))
+          except Exception as e:
+              print("Could not parse API response:", str(e))
+              sys.exit(0)
+          if "https_certificate" in obj or "html_url" in obj:
+              cert=obj.get("https_certificate") or {}
+              print(json.dumps({
+                  "cname":obj.get("cname"),
+                  "https_enforced":obj.get("https_enforced"),
+                  "html_url":obj.get("html_url"),
+                  "pages_status":obj.get("status"),
+                  "build_type":obj.get("build_type"),
+                  "certificate":{key:cert.get(key) for key in ("state","description","domains","expires_at","deployed_at") if key in cert}
+              },indent=2))
+          elif "health" in obj or "domain" in obj:
+              print(json.dumps(obj,indent=2)[:3500])
+          else:
+              print("API response:",obj.get("message","Nonstandard response") if isinstance(obj,dict) else "Unexpected JSON type")
+          PY
+            rm -f "$tmp"
+          done
+      - name: Independently resolve hostname and inspect TLS (never bypass validation)
+        shell: bash
+        run: |
+          set -uo pipefail
+          host="tropicals.blackthorn.enterprises"
+          for resolver in 1.1.1.1 8.8.8.8; do
+            echo "Resolver $resolver:"
+            for kind in CNAME A AAAA CAA; do
+              printf '%s: ' "$kind"
+              dig @"$resolver" +short +time=3 +tries=1 "$host" "$kind" | tr '\n' ' '
+              echo
+            done
+            echo "Parent-domain CAA:"
+            dig @"$resolver" +short +time=3 +tries=1 blackthorn.enterprises CAA
+          done
+          echo "Certificate currently presented by host:"
+          echo | timeout 15 openssl s_client -connect "$host:443" -servername "$host" -showcerts 2>/dev/null | \
+            openssl x509 -noout -subject -issuer -dates -ext subjectAltName 2>&1 | head -n 22
+          echo "Strict HTTPS result (no --insecure):"
+          curl --silent --show-error --head --location --connect-timeout 7 --max-time 18 \
+            --output /dev/null --write-out "http=%{http_code} final=%{url_effective} tls_verify=%{ssl_verify_result}\n" \
+            "https://$host/" || true
+          echo "Read-only diagnostic completed; no Pages/DNS settings modified."
