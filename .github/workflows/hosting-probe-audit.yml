@@ -1,0 +1,86 @@
+name: Probe Tropical Plants hosting and production advisories
+
+on:
+  push:
+    branches: [validation/tropicals-hosting-audit-20261024]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  hosting-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Inspect DNS and public HTTPS without altering hosting
+        shell: bash
+        run: |
+          set -uo pipefail
+          echo "## Tropical Plants hosting probe" >> "$GITHUB_STEP_SUMMARY"
+          echo "Timestamp UTC: $(date -u +'%Y-%m-%dT%H:%M:%SZ')" | tee -a "$GITHUB_STEP_SUMMARY"
+          host=tropicals.blackthorn.enterprises
+          for type in CNAME A AAAA; do
+            echo "DNS $type:" | tee -a "$GITHUB_STEP_SUMMARY"
+            dig +time=3 +tries=1 +short "$host" "$type" | head -n 10 | tee -a "$GITHUB_STEP_SUMMARY"
+          done
+          for target in "https://tropicals.blackthorn.enterprises/" "https://cjblackthorn.github.io/blackthorn-tropicals/"; do
+            echo "### Checking $target" | tee -a "$GITHUB_STEP_SUMMARY"
+            headers="$(mktemp)"
+            body="$(mktemp)"
+            result=$(curl --location --silent --show-error --compressed --max-time 18 \
+              --dump-header "$headers" --output "$body" \
+              --write-out "http=%{http_code} final=%{url_effective} remote_ip=%{remote_ip} tls=%{ssl_verify_result} bytes=%{size_download}" \
+              "$target" 2>&1)
+            code=$?
+            echo "curl_exit=$code $result" | tee -a "$GITHUB_STEP_SUMMARY"
+            if [ "$code" -eq 0 ]; then
+              echo "Response headers (filtered):" | tee -a "$GITHUB_STEP_SUMMARY"
+              grep -iE '^(HTTP/|server:|cf-ray:|x-powered-by:|content-type:|location:|x-github-request-id:|x-served-by:|x-cache:)' "$headers" | tail -n 20 | tee -a "$GITHUB_STEP_SUMMARY" || true
+              echo "HTML title:" | tee -a "$GITHUB_STEP_SUMMARY"
+              grep -Eoi '<title>[^<]*</title>' "$body" | head -n 2 | tee -a "$GITHUB_STEP_SUMMARY" || true
+              echo "Static/Worker indicators (counts):" | tee -a "$GITHUB_STEP_SUMMARY"
+              for needle in "public/assets/images" "/_next/" "__next" "__rsc" "data-cart-open" "From node to jungle"; do
+                count=$(grep -oF "$needle" "$body" | wc -l || true)
+                echo "$needle: $count" | tee -a "$GITHUB_STEP_SUMMARY"
+              done
+            fi
+            rm -f "$headers" "$body"
+          done
+          echo "Probe is informational: no source changes or deployments."
+  dependency-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install locked packages
+        run: npm ci --no-audit --no-fund
+      - name: Audit runtime dependency graph
+        shell: bash
+        run: |
+          set +e
+          npm audit --omit=dev --json > "$RUNNER_TEMP/runtime-audit.json"
+          audit_rc=$?
+          set -e
+          echo "npm audit exit: $audit_rc" >> "$GITHUB_STEP_SUMMARY"
+          node - "$RUNNER_TEMP/runtime-audit.json" <<'NODE'
+          const fs = require('node:fs');
+          const report = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
+          const vulnerabilities = report.metadata?.vulnerabilities || {};
+          const found = Object.entries(report.vulnerabilities || {}).map(([name, issue]) => ({
+            name, severity: issue.severity, isDirect: issue.isDirect,
+            fixAvailable: issue.fixAvailable,
+          }));
+          const summary = { total: vulnerabilities.total ?? null, critical: vulnerabilities.critical ?? null, high: vulnerabilities.high ?? null, moderate: vulnerabilities.moderate ?? null, low: vulnerabilities.low ?? null, findings: found };
+          const out = JSON.stringify(summary, null, 2);
+          console.log(out);
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, '## Runtime package audit\n\n```json\n' + out + '\n```\n');
+          if (report.error) process.exit(2);
+          if ((vulnerabilities.critical || 0) + (vulnerabilities.high || 0) > 0) process.exit(1);
+          NODE
