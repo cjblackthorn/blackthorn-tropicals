@@ -83,3 +83,46 @@ jobs:
           curl --silent --show-error --max-time 18 --head \
             "https://cjblackthorn.github.io/blackthorn-tropicals/" | grep -iE '^(HTTP/|location:)' | head -n 10 || true
           echo "Read-only diagnostic completed; no Pages/DNS settings modified."
+
+      - name: Verify enforcement and redirects after admin change
+        shell: bash
+        run: |
+          set -euo pipefail
+          host="tropicals.blackthorn.enterprises"
+          curl --fail --silent --show-error --max-time 20 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/pages" -o /tmp/pages-state.json
+          python3 - <<'PY'
+          import json
+          x=json.load(open("/tmp/pages-state.json"))
+          cert=x.get("https_certificate") or {}
+          print("Pages HTTPS enforced:",x.get("https_enforced"))
+          print("Pages certificate state:",cert.get("state"))
+          assert x.get("https_enforced") is True, "GitHub Pages HTTPS enforcement not yet enabled"
+          assert cert.get("state")=="approved", "Pages certificate not yet approved"
+          PY
+          # Keep redirect validation separate from the HTTPS content request.
+          redirect=$(curl --silent --show-error --max-time 20 --max-redirs 0 \
+            --output /dev/null --write-out '%{http_code}|%{redirect_url}' "http://$host/")
+          echo "HTTP first hop: $redirect"
+          case "$redirect" in
+            "301|https://$host/"*|"302|https://$host/"*|"307|https://$host/"*|"308|https://$host/"*) ;;
+            *) echo "Plain HTTP is not redirected to the HTTPS hostname" >&2; exit 1;;
+          esac
+          verified=$(curl --fail --silent --show-error --location --max-time 20 \
+            --output /dev/null --write-out '%{http_code}|%{ssl_verify_result}|%{url_effective}' "https://$host/")
+          echo "Verified HTTPS: $verified"
+          case "$verified" in
+            "200|0|https://$host/"*) ;;
+            *) echo "HTTPS not verified" >&2; exit 1;;
+          esac
+          alias_redirect=$(curl --silent --show-error --max-time 20 --max-redirs 0 \
+            --output /dev/null --write-out '%{http_code}|%{redirect_url}' \
+            "https://cjblackthorn.github.io/blackthorn-tropicals/")
+          echo "Pages alias first hop: $alias_redirect"
+          case "$alias_redirect" in
+            "301|https://$host/"*|"302|https://$host/"*|"307|https://$host/"*|"308|https://$host/"*) ;;
+            *) echo "Pages alias did not redirect to secured custom domain" >&2; exit 1;;
+          esac
+          echo "PASS: GitHub Pages enforces HTTPS, custom-domain TLS validates, and redirects point to HTTPS."
