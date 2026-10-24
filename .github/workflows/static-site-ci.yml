@@ -1,0 +1,41 @@
+name: Verify Tropical Plants static storefront
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'styles.css'
+      - 'script.js'
+      - 'CNAME'
+      - 'public/**'
+      - 'scripts/validate_static_site.py'
+      - '.github/workflows/static-site-ci.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'styles.css'
+      - 'script.js'
+      - 'CNAME'
+      - 'public/**'
+      - 'scripts/validate_static_site.py'
+      - '.github/workflows/static-site-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  static-checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Validate static page references and accessibility basics
+        run: python3 scripts/validate_static_site.py
+      - name: Check storefront JavaScript syntax
+        run: node --check script.js
