@@ -1,7 +1,39 @@
 const CONTACT_EMAIL = "blackthorntropicals@gmail.com";
 const CART_KEY = "blackthorn_quote_cart";
 
-const cart = new Map(JSON.parse(localStorage.getItem(CART_KEY) || "[]"));
+// Restore only recognizable current inventory records; corrupted localStorage must
+// never prevent the public storefront from rendering.
+const cart = loadCart();
+
+function loadCart() {
+  let raw;
+  try {
+    raw = JSON.parse(localStorage.getItem(CART_KEY) || "[]");
+  } catch {
+    return new Map();
+  }
+  if (!Array.isArray(raw)) return new Map();
+  const inventory = new Map(
+    [...document.querySelectorAll(".plant-card[data-sku]")].map((card) => [
+      card.dataset.sku,
+      {
+        sku: card.dataset.sku,
+        title: card.dataset.title,
+        price: Number(card.dataset.price || 0),
+      },
+    ]),
+  );
+  const restored = new Map();
+  for (const pair of raw) {
+    if (!Array.isArray(pair) || pair.length !== 2) continue;
+    const [sku, saved] = pair;
+    const current = inventory.get(sku);
+    if (!current || !saved || !Number.isInteger(saved.quantity)) continue;
+    if (saved.quantity < 1 || saved.quantity > 99) continue;
+    restored.set(sku, { ...current, quantity: saved.quantity });
+  }
+  return restored;
+}
 
 const navToggle = document.querySelector(".nav-toggle");
 const siteNav = document.querySelector(".site-nav");
@@ -16,7 +48,11 @@ const contactForm = document.querySelector("[data-contact-form]");
 const formNote = document.querySelector("[data-form-note]");
 
 function saveCart() {
-  localStorage.setItem(CART_KEY, JSON.stringify([...cart.entries()]));
+  try {
+    localStorage.setItem(CART_KEY, JSON.stringify([...cart.entries()]));
+  } catch {
+    // Keep the in-memory cart usable when browser storage is restricted.
+  }
 }
 
 function formatCurrency(value) {
