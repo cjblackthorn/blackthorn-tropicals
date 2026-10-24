@@ -105,6 +105,34 @@ async function main() {
     await restricted.close();
     console.log("PASS: storage-unavailable in-memory cart");
 
+    // Threat-oriented rendering test: treat future inventory-sourced titles as
+    // plain text even if malformed or malicious catalog data reaches the DOM.
+    const hostile = await browser.newContext();
+    const test = await visit(hostile);
+    const injection = '<img src=x onerror="window.__injected=true">';
+    await test.page.locator(".plant-card[data-sku='queen-node']").evaluate((el, title) => {
+      el.dataset.title = title;
+    }, injection);
+    await test.page.locator(".plant-card[data-sku='queen-node'] [data-add-to-cart]").click();
+    assert.equal(await test.page.locator("[data-cart-items] img").count(), 0);
+    assert.ok((await test.page.locator("[data-cart-items]").innerText()).includes(injection));
+    assert.equal(await test.page.evaluate(() => Boolean(window.__injected)), false);
+    assert.deepEqual(test.errors, []);
+    await hostile.close();
+    console.log("PASS: catalog titles display as text, never dynamic HTML");
+
+    // Fail safely for a malformed catalog price rather than displaying NaN.
+    const badPrice = await browser.newContext();
+    const bad = await visit(badPrice);
+    await bad.page.locator(".plant-card[data-sku='queen-node']").evaluate(el => {
+      el.dataset.price = "not-a-number";
+    });
+    await bad.page.locator(".plant-card[data-sku='queen-node'] [data-add-to-cart]").click();
+    assert.equal(await bad.page.locator("[data-cart-count]").innerText(), "0");
+    assert.deepEqual(bad.errors, []);
+    await badPrice.close();
+    console.log("PASS: rejects malformed catalog price");
+
     console.log("All static Tropical Plants functional browser smoke checks passed. No inquiry submitted.");
   } finally {
     await browser.close();
