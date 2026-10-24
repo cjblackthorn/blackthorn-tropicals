@@ -81,29 +81,44 @@ function renderCart() {
   cartCount.textContent = count;
   cartTotal.textContent = formatCurrency(total);
 
+  // Build elements, not HTML strings: future catalog titles/SKUs must not
+  // become executable markup if an upstream inventory source ever changes.
+  const fragment = document.createDocumentFragment();
   if (!entries.length) {
-    cartItems.innerHTML = '<p class="empty-cart">No plants selected yet.</p>';
-    return;
+    const empty = document.createElement("p");
+    empty.className = "empty-cart";
+    empty.textContent = "No plants selected yet.";
+    fragment.appendChild(empty);
+  } else {
+    entries.forEach((item) => {
+      const row = document.createElement("div");
+      row.className = "quote-item";
+      const details = document.createElement("div");
+      const name = document.createElement("strong");
+      name.textContent = item.title;
+      const amount = document.createElement("span");
+      amount.textContent = `${item.quantity} x ${formatCurrency(item.price)}`;
+      details.append(name, amount);
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.dataset.removeItem = item.sku;
+      remove.setAttribute("aria-label", `Remove ${item.title}`);
+      remove.textContent = "-";
+      row.append(details, remove);
+      fragment.appendChild(row);
+    });
   }
-
-  cartItems.innerHTML = entries
-    .map(
-      (item) => `
-        <div class="quote-item">
-          <div>
-            <strong>${item.title}</strong>
-            <span>${item.quantity} x ${formatCurrency(item.price)}</span>
-          </div>
-          <button type="button" data-remove-item="${item.sku}" aria-label="Remove ${item.title}">-</button>
-        </div>
-      `,
-    )
-    .join("");
+  cartItems.replaceChildren(fragment);
 }
 
 function addToCart(card) {
   const item = getCardData(card);
+  if (!item.sku || !Number.isFinite(item.price) || item.price < 0) return;
   const current = cart.get(item.sku) || { ...item, quantity: 0 };
+  if (current.quantity >= 99) {
+    openCart();
+    return;
+  }
   cart.set(item.sku, { ...current, quantity: current.quantity + 1 });
   saveCart();
   renderCart();
